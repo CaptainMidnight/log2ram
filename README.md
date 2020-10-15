@@ -3,7 +3,7 @@ Like ramlog for systemd (on debian 8 jessie for example).
 
 Usefull for **RaspberryPi** for not writing on the SD card all the time. You need it because your SD card doesn't want to suffer anymore!
 
-Explanations: The script creates a `/var/log` mount point in RAM. So any writing of the log to the `/var/log` folder will not actually be written to disk (in this case to the sd card for a raspberry card) but directly to RAM. By default, every days, the CRON will launch a synchronization of the RAM to the folder located on the physical disk. The script will also make this copy of RAM to disk in case of machine shutdown (but cannot do it in case of power failure). This way you avoid excessive writing on the SD card.
+Explanations: The script creates a `/var/log` mount point in RAM. So any writing of the log to the `/var/log` folder will not actually be written to disk (in this case to the sd card for a raspberry card) but directly to RAM. By default, every day, the CRON will launch a synchronization of the RAM to the folder located on the physical disk. The script will also make this copy of RAM to disk in case of machine shutdown (but cannot do it in case of power failure). This way you avoid excessive writing on the SD card.
 
 The script [log2ram](https://github.com/azlux/log2ram) can work on every linux system. So you can use it with your own daemon manager if you don't have systemd.
 
@@ -47,7 +47,13 @@ In the file `/etc/log2ram.conf`, there are three variables:
 - `ZL2R`: Enable zram compatibility (`false` by default). Check the comment on the config file. See https://github.com/StuartIanNaylor/zram-swap-config to configure a zram space on your raspberry before enable this option.
 
 #### refresh time:
-By default Log2Ram writes to the HardDisk every day. If you think this is too much, you can move `/etc/cron.daily/log2ram` in an other cron folder, or remove it if you prefer writing logs only at stop/reboot.
+By default Log2Ram writes to disk every day. If you think this is too much, you can run `systemctl edit log2ram-daily.timer` and add:
+
+```ini
+[Timer]
+OnCalendar=weekly
+```
+... or even disable it with `systemctl disable log2ram-daily.timer`, if you prefer writing logs only at stop/reboot.
 
 ### It is working?
 You can now check the mount folder in ram with (You will see lines with log2ram if working)
@@ -85,6 +91,13 @@ Compressor for zram. Usefull for the `COMP_ALG` of ZRAM on the config file.
 
 ## Uninstall :(
 (Because sometime we need it)
+### With APT
+```
+apt remove log2ram
+```
+You can use `--purge` to remove config files as well.
+
+### Manually
 ```
 chmod +x /usr/local/bin/uninstall-log2ram.sh && sudo /usr/local/bin/uninstall-log2ram.sh
 ```
